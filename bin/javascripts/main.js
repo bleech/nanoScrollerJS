@@ -1,10 +1,10 @@
 $(function(){
 
-  $('.nano').nanoScroller({
-    preventPageScrolling: true
-  });
   $("#main").find('.description').load("readme.html", function(){
-    $(".nano").nanoScroller();
+    window.test = $(".nano").nanoScroller({
+      externalScrollbar: false,
+      preventPageScrolling: true
+    });
   });
 
 

@@ -12,3 +12,11 @@
 .nano .slider {
 	background: #111;
 }
+
+
+.pane.external {
+  background : #f00;
+}
+.pane.external > .slider {
+  background: #0f0;
+}
