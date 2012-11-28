@@ -176,7 +176,15 @@
       @default null
     *&#x2F;
 
-    sliderMaxHeight: null
+    sliderMaxHeight: null,
+    &#x2F;**
+      a maximum height for the &#x60;.slider&#x60; element.
+      @property sliderMaxHeight
+      @type Number
+      @default null
+    *&#x2F;
+
+    externalScrollbar: false
   };
   &#x2F;**
     @property SCROLLBAR
@@ -444,7 +452,11 @@
           return false;
         },
         drag: function(e) {
-          _this.sliderY = e.pageY - _this.$el.offset().top - _this.offsetY;
+          if (_this.options.externalScrollbar) {
+            _this.sliderY = e.pageY - _this.offsetY;
+          } else {
+            _this.sliderY = e.pageY - _this.$el.offset().top - _this.offsetY;
+          }
           _this.scroll();
           _this.updateScrollValues();
           if (_this.contentScrollTop &gt;= _this.maxScrollTop) {
@@ -548,17 +560,26 @@
 
 
     NanoScroll.prototype.generate = function() {
-      var contentClass, cssRule, options, paneClass, sliderClass;
+      var $body, contentClass, cssRule, externalScrollbar, options, paneClass, sliderClass;
       options = this.options;
-      paneClass = options.paneClass, sliderClass = options.sliderClass, contentClass = options.contentClass;
-      if (!this.$el.find(&quot;&quot; + paneClass).length &amp;&amp; !this.$el.find(&quot;&quot; + sliderClass).length) {
-        this.$el.append(&quot;&lt;div class=\&quot;&quot; + paneClass + &quot;\&quot;&gt;&lt;div class=\&quot;&quot; + sliderClass + &quot;\&quot; &#x2F;&gt;&lt;&#x2F;div&gt;&quot;);
+      paneClass = options.paneClass, sliderClass = options.sliderClass, contentClass = options.contentClass, externalScrollbar = options.externalScrollbar;
+      if (externalScrollbar) {
+        $body = $(&#x27;body&#x27;);
+        if (!$body.children(&quot;.&quot; + paneClass).length &amp;&amp; !$body.children(&quot;.&quot; + sliderClass).length) {
+          $body.append(&quot;&lt;div class=\&quot;&quot; + paneClass + &quot; external\&quot;&gt;&lt;div class=\&quot;&quot; + sliderClass + &quot;\&quot; &#x2F;&gt;&lt;&#x2F;div&gt;&quot;);
+        }
+        this.pane = $body.children(&quot;.&quot; + paneClass);
+        this.slider = this.pane.children(&quot;.&quot; + sliderClass);
+      } else {
+        if (!this.$el.find(&quot;&quot; + paneClass).length &amp;&amp; !this.$el.find(&quot;&quot; + sliderClass).length) {
+          this.$el.append(&quot;&lt;div class=\&quot;&quot; + paneClass + &quot;\&quot;&gt;&lt;div class=\&quot;&quot; + sliderClass + &quot;\&quot; &#x2F;&gt;&lt;&#x2F;div&gt;&quot;);
+        }
+        this.slider = this.$el.find(&quot;.&quot; + sliderClass);
+        this.pane = this.$el.find(&quot;.&quot; + paneClass);
       }
       this.$content = this.$el.children(&quot;.&quot; + contentClass);
       this.$content.attr(&#x27;tabindex&#x27;, 0);
       this.content = this.$content[0];
-      this.slider = this.$el.find(&quot;.&quot; + sliderClass);
-      this.pane = this.$el.find(&quot;.&quot; + paneClass);
       if (BROWSER_SCROLLBAR_WIDTH) {
         cssRule = this.$el.css(&#x27;direction&#x27;) === &#x27;rtl&#x27; ? {
           left: -BROWSER_SCROLLBAR_WIDTH
@@ -666,7 +687,11 @@
       }
       this.sliderY = Math.max(0, this.sliderY);
       this.sliderY = Math.min(this.maxSliderTop, this.sliderY);
-      this.$content.scrollTop((this.paneHeight - this.contentHeight + BROWSER_SCROLLBAR_WIDTH) * this.sliderY &#x2F; this.maxSliderTop * -1);
+      if (this.options.externalScrollbar) {
+        this.$content.scrollTop((this.$content.get(0).scrollHeight - this.$el.innerHeight()) * this.sliderY &#x2F; this.maxSliderTop);
+      } else {
+        this.$content.scrollTop((this.paneHeight - this.contentHeight + BROWSER_SCROLLBAR_WIDTH) * this.sliderY &#x2F; this.maxSliderTop * -1);
+      }
       this.slider.css({
         top: this.sliderY
       });

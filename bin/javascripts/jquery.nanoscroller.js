@@ -88,7 +88,15 @@
       @default null
     */
 
-    sliderMaxHeight: null
+    sliderMaxHeight: null,
+    /**
+      a maximum height for the `.slider` element.
+      @property sliderMaxHeight
+      @type Number
+      @default null
+    */
+
+    externalScrollbar: false
   };
   /**
     @property SCROLLBAR
@@ -356,7 +364,11 @@
           return false;
         },
         drag: function(e) {
-          _this.sliderY = e.pageY - _this.$el.offset().top - _this.offsetY;
+          if (_this.options.externalScrollbar) {
+            _this.sliderY = e.pageY - _this.offsetY;
+          } else {
+            _this.sliderY = e.pageY - _this.$el.offset().top - _this.offsetY;
+          }
           _this.scroll();
           _this.updateScrollValues();
           if (_this.contentScrollTop >= _this.maxScrollTop) {
@@ -460,17 +472,26 @@
 
 
     NanoScroll.prototype.generate = function() {
-      var contentClass, cssRule, options, paneClass, sliderClass;
+      var $body, contentClass, cssRule, externalScrollbar, options, paneClass, sliderClass;
       options = this.options;
-      paneClass = options.paneClass, sliderClass = options.sliderClass, contentClass = options.contentClass;
-      if (!this.$el.find("" + paneClass).length && !this.$el.find("" + sliderClass).length) {
-        this.$el.append("<div class=\"" + paneClass + "\"><div class=\"" + sliderClass + "\" /></div>");
+      paneClass = options.paneClass, sliderClass = options.sliderClass, contentClass = options.contentClass, externalScrollbar = options.externalScrollbar;
+      if (externalScrollbar) {
+        $body = $('body');
+        if (!$body.children("." + paneClass).length && !$body.children("." + sliderClass).length) {
+          $body.append("<div class=\"" + paneClass + " external\"><div class=\"" + sliderClass + "\" /></div>");
+        }
+        this.pane = $body.children("." + paneClass);
+        this.slider = this.pane.children("." + sliderClass);
+      } else {
+        if (!this.$el.find("" + paneClass).length && !this.$el.find("" + sliderClass).length) {
+          this.$el.append("<div class=\"" + paneClass + "\"><div class=\"" + sliderClass + "\" /></div>");
+        }
+        this.slider = this.$el.find("." + sliderClass);
+        this.pane = this.$el.find("." + paneClass);
       }
       this.$content = this.$el.children("." + contentClass);
       this.$content.attr('tabindex', 0);
       this.content = this.$content[0];
-      this.slider = this.$el.find("." + sliderClass);
-      this.pane = this.$el.find("." + paneClass);
       if (BROWSER_SCROLLBAR_WIDTH) {
         cssRule = this.$el.css('direction') === 'rtl' ? {
           left: -BROWSER_SCROLLBAR_WIDTH
@@ -578,7 +599,11 @@
       }
       this.sliderY = Math.max(0, this.sliderY);
       this.sliderY = Math.min(this.maxSliderTop, this.sliderY);
-      this.$content.scrollTop((this.paneHeight - this.contentHeight + BROWSER_SCROLLBAR_WIDTH) * this.sliderY / this.maxSliderTop * -1);
+      if (this.options.externalScrollbar) {
+        this.$content.scrollTop((this.$content.get(0).scrollHeight - this.$el.innerHeight()) * this.sliderY / this.maxSliderTop);
+      } else {
+        this.$content.scrollTop((this.paneHeight - this.contentHeight + BROWSER_SCROLLBAR_WIDTH) * this.sliderY / this.maxSliderTop * -1);
+      }
       this.slider.css({
         top: this.sliderY
       });

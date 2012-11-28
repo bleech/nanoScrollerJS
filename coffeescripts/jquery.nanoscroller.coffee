@@ -90,6 +90,14 @@
     ###
     sliderMaxHeight: null
 
+    ###*
+      a maximum height for the `.slider` element.
+      @property sliderMaxHeight
+      @type Number
+      @default null
+    ###
+    externalScrollbar: false
+
   # Constants
 
   ###*
@@ -341,7 +349,10 @@
           false
 
         drag: (e) =>
-          @sliderY = e.pageY - @$el.offset().top - @offsetY
+          if @options.externalScrollbar
+            @sliderY = e.pageY - @offsetY
+          else
+            @sliderY = e.pageY - @$el.offset().top - @offsetY
           do @scroll
           do @updateScrollValues
           if @contentScrollTop >= @maxScrollTop
@@ -442,18 +453,31 @@
       # For reference:
       # http://msdn.microsoft.com/en-us/library/windows/desktop/bb787527(v=vs.85).aspx#parts_of_scroll_bar
       options = @options
-      {paneClass, sliderClass, contentClass} = options
-      if not @$el.find("#{paneClass}").length and not @$el.find("#{sliderClass}").length
-        @$el.append """<div class="#{paneClass}"><div class="#{sliderClass}" /></div>"""
+      {paneClass, sliderClass, contentClass, externalScrollbar} = options
+      if externalScrollbar
+        $body = $ 'body'
+        if not $body.children(".#{paneClass}").length and not $body.children(".#{sliderClass}").length
+          $body.append """<div class="#{paneClass} external"><div class="#{sliderClass}" /></div>"""
+
+        # pane is the name for the actual scrollbar.
+        @pane = $body.children ".#{paneClass}"
+
+        # slider is the name for the  scrollbox or thumb of the scrollbar gadget
+        @slider = @pane.children ".#{sliderClass}"
+
+      else
+        if not @$el.find("#{paneClass}").length and not @$el.find("#{sliderClass}").length
+          @$el.append """<div class="#{paneClass}"><div class="#{sliderClass}" /></div>"""
+
+        # slider is the name for the  scrollbox or thumb of the scrollbar gadget
+        @slider = @$el.find ".#{sliderClass}"
+
+        # pane is the name for the actual scrollbar.
+        @pane = @$el.find ".#{paneClass}"
+
       @$content = @$el.children(".#{contentClass}")
       @$content.attr 'tabindex', 0
       @content = @$content[0]
-
-      # slider is the name for the  scrollbox or thumb of the scrollbar gadget
-      @slider = @$el.find ".#{sliderClass}"
-
-      # pane is the name for the actual scrollbar.
-      @pane = @$el.find ".#{paneClass}"
 
       if BROWSER_SCROLLBAR_WIDTH
         cssRule = if @$el.css('direction') is 'rtl' then left: -BROWSER_SCROLLBAR_WIDTH else right: -BROWSER_SCROLLBAR_WIDTH
@@ -553,7 +577,10 @@
       return unless @isActive
       @sliderY = Math.max 0, @sliderY
       @sliderY = Math.min @maxSliderTop, @sliderY
-      @$content.scrollTop (@paneHeight - @contentHeight + BROWSER_SCROLLBAR_WIDTH) * @sliderY / @maxSliderTop * -1
+      if @options.externalScrollbar
+        @$content.scrollTop (@$content.get(0).scrollHeight - @$el.innerHeight()) * @sliderY / @maxSliderTop
+      else
+        @$content.scrollTop (@paneHeight - @contentHeight + BROWSER_SCROLLBAR_WIDTH) * @sliderY / @maxSliderTop * -1
       @slider.css top: @sliderY
       this
 
