@@ -565,7 +565,7 @@
       paneClass = options.paneClass, sliderClass = options.sliderClass, contentClass = options.contentClass, externalScrollbar = options.externalScrollbar;
       if (externalScrollbar) {
         $body = $(&#x27;body&#x27;);
-        if (!$body.children(&quot;.&quot; + paneClass).length &amp;&amp; !$body.children(&quot;.&quot; + sliderClass).length) {
+        if (!$body.children(&quot;.&quot; + paneClass).length &amp;&amp; !$body.children(&quot;.&quot; + paneClass).children(&quot;.&quot; + sliderClass).length) {
           $body.append(&quot;&lt;div class=\&quot;&quot; + paneClass + &quot; external\&quot;&gt;&lt;div class=\&quot;&quot; + sliderClass + &quot;\&quot; &#x2F;&gt;&lt;&#x2F;div&gt;&quot;);
         }
         this.pane = $body.children(&quot;.&quot; + paneClass);
@@ -621,8 +621,14 @@
 
     NanoScroll.prototype.reset = function() {
       var content, contentHeight, contentStyle, contentStyleOverflowY, paneBottom, paneHeight, paneOuterHeight, paneTop, sliderHeight;
-      if (!this.$el.find(&quot;.&quot; + this.options.paneClass).length) {
-        this.generate().stop();
+      if (this.options.externalScrollbar) {
+        if (!$(&#x27;body&#x27;).children(&quot;.&quot; + this.options.paneClass).length) {
+          this.generate().stop();
+        }
+      } else {
+        if (!this.$el.find(&quot;.&quot; + this.options.paneClass).length) {
+          this.generate().stop();
+        }
       }
       if (this.stopped) {
         this.restore();
@@ -640,7 +646,11 @@
       paneTop = parseInt(this.pane.css(&#x27;top&#x27;), 10);
       paneBottom = parseInt(this.pane.css(&#x27;bottom&#x27;), 10);
       paneOuterHeight = paneHeight + paneTop + paneBottom;
-      sliderHeight = Math.round(paneOuterHeight &#x2F; contentHeight * paneOuterHeight);
+      if (this.options.externalScrollbar) {
+        sliderHeight = Math.round(content.clientHeight &#x2F; contentHeight * paneOuterHeight);
+      } else {
+        sliderHeight = Math.round(paneOuterHeight &#x2F; contentHeight * paneOuterHeight);
+      }
       if (sliderHeight &lt; this.options.sliderMinHeight) {
         sliderHeight = this.options.sliderMinHeight;
       } else if ((this.options.sliderMaxHeight != null) &amp;&amp; sliderHeight &gt; this.options.sliderMaxHeight) {
@@ -658,7 +668,7 @@
       this.events.scroll();
       this.pane.show();
       this.isActive = true;
-      if ((content.scrollHeight === content.clientHeight) || (this.pane.outerHeight(true) &gt;= content.scrollHeight &amp;&amp; contentStyleOverflowY !== SCROLL)) {
+      if ((content.scrollHeight === content.clientHeight) || (this.pane.outerHeight(true) &gt;= content.scrollHeight &amp;&amp; contentStyleOverflowY !== SCROLL &amp;&amp; this.options.externalScrollbar === false)) {
         this.pane.hide();
         this.isActive = false;
       } else if (this.el.clientHeight === content.scrollHeight &amp;&amp; contentStyleOverflowY === SCROLL) {

@@ -477,7 +477,7 @@
       paneClass = options.paneClass, sliderClass = options.sliderClass, contentClass = options.contentClass, externalScrollbar = options.externalScrollbar;
       if (externalScrollbar) {
         $body = $('body');
-        if (!$body.children("." + paneClass).length && !$body.children("." + sliderClass).length) {
+        if (!$body.children("." + paneClass).length && !$body.children("." + paneClass).children("." + sliderClass).length) {
           $body.append("<div class=\"" + paneClass + " external\"><div class=\"" + sliderClass + "\" /></div>");
         }
         this.pane = $body.children("." + paneClass);
@@ -533,8 +533,14 @@
 
     NanoScroll.prototype.reset = function() {
       var content, contentHeight, contentStyle, contentStyleOverflowY, paneBottom, paneHeight, paneOuterHeight, paneTop, sliderHeight;
-      if (!this.$el.find("." + this.options.paneClass).length) {
-        this.generate().stop();
+      if (this.options.externalScrollbar) {
+        if (!$('body').children("." + this.options.paneClass).length) {
+          this.generate().stop();
+        }
+      } else {
+        if (!this.$el.find("." + this.options.paneClass).length) {
+          this.generate().stop();
+        }
       }
       if (this.stopped) {
         this.restore();
@@ -552,7 +558,11 @@
       paneTop = parseInt(this.pane.css('top'), 10);
       paneBottom = parseInt(this.pane.css('bottom'), 10);
       paneOuterHeight = paneHeight + paneTop + paneBottom;
-      sliderHeight = Math.round(paneOuterHeight / contentHeight * paneOuterHeight);
+      if (this.options.externalScrollbar) {
+        sliderHeight = Math.round(content.clientHeight / contentHeight * paneOuterHeight);
+      } else {
+        sliderHeight = Math.round(paneOuterHeight / contentHeight * paneOuterHeight);
+      }
       if (sliderHeight < this.options.sliderMinHeight) {
         sliderHeight = this.options.sliderMinHeight;
       } else if ((this.options.sliderMaxHeight != null) && sliderHeight > this.options.sliderMaxHeight) {
@@ -570,7 +580,7 @@
       this.events.scroll();
       this.pane.show();
       this.isActive = true;
-      if ((content.scrollHeight === content.clientHeight) || (this.pane.outerHeight(true) >= content.scrollHeight && contentStyleOverflowY !== SCROLL)) {
+      if ((content.scrollHeight === content.clientHeight) || (this.pane.outerHeight(true) >= content.scrollHeight && contentStyleOverflowY !== SCROLL && this.options.externalScrollbar === false)) {
         this.pane.hide();
         this.isActive = false;
       } else if (this.el.clientHeight === content.scrollHeight && contentStyleOverflowY === SCROLL) {
