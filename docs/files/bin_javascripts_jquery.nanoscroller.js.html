@@ -640,7 +640,11 @@
       paneTop = parseInt(this.pane.css(&#x27;top&#x27;), 10);
       paneBottom = parseInt(this.pane.css(&#x27;bottom&#x27;), 10);
       paneOuterHeight = paneHeight + paneTop + paneBottom;
-      sliderHeight = Math.round(paneOuterHeight &#x2F; contentHeight * paneOuterHeight);
+      if (this.options.externalScrollbar) {
+        sliderHeight = Math.round(content.clientHeight &#x2F; contentHeight * paneOuterHeight);
+      } else {
+        sliderHeight = Math.round(paneOuterHeight &#x2F; contentHeight * paneOuterHeight);
+      }
       if (sliderHeight &lt; this.options.sliderMinHeight) {
         sliderHeight = this.options.sliderMinHeight;
       } else if ((this.options.sliderMaxHeight != null) &amp;&amp; sliderHeight &gt; this.options.sliderMaxHeight) {
@@ -658,7 +662,7 @@
       this.events.scroll();
       this.pane.show();
       this.isActive = true;
-      if ((content.scrollHeight === content.clientHeight) || (this.pane.outerHeight(true) &gt;= content.scrollHeight &amp;&amp; contentStyleOverflowY !== SCROLL)) {
+      if ((content.scrollHeight === content.clientHeight) || (this.pane.outerHeight(true) &gt;= content.scrollHeight &amp;&amp; contentStyleOverflowY !== SCROLL &amp;&amp; this.options.externalScrollbar === false)) {
         this.pane.hide();
         this.isActive = false;
       } else if (this.el.clientHeight === content.scrollHeight &amp;&amp; contentStyleOverflowY === SCROLL) {

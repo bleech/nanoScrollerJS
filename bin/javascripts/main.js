@@ -1,8 +1,8 @@
 $(function(){
 
-  $("#main").find('.description').load("readme.html", function(){
+  $("#main").find('.description').load("readme_short.html", function(){
     window.test = $(".nano").nanoScroller({
-      externalScrollbar: false,
+      externalScrollbar: true,
       preventPageScrolling: true
     });
   });

@@ -527,7 +527,10 @@
       paneOuterHeight = paneHeight + paneTop + paneBottom
 
       # set the slider's height
-      sliderHeight = Math.round paneOuterHeight / contentHeight * paneOuterHeight
+      if @options.externalScrollbar
+        sliderHeight = Math.round content.clientHeight / contentHeight * paneOuterHeight
+      else
+        sliderHeight = Math.round paneOuterHeight / contentHeight * paneOuterHeight
       if sliderHeight < @options.sliderMinHeight
         sliderHeight = @options.sliderMinHeight # set min height
       else if @options.sliderMaxHeight? and sliderHeight > @options.sliderMaxHeight
@@ -552,7 +555,7 @@
       do @pane.show
       @isActive = true
       if (content.scrollHeight is content.clientHeight) or (
-          @pane.outerHeight(true) >= content.scrollHeight and contentStyleOverflowY isnt SCROLL)
+          @pane.outerHeight(true) >= content.scrollHeight and contentStyleOverflowY isnt SCROLL and @options.externalScrollbar is false)
         do @pane.hide
         @isActive = false
       else if @el.clientHeight is content.scrollHeight and contentStyleOverflowY is SCROLL
