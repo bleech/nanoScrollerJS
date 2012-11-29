@@ -477,7 +477,7 @@
       paneClass = options.paneClass, sliderClass = options.sliderClass, contentClass = options.contentClass, externalScrollbar = options.externalScrollbar;
       if (externalScrollbar) {
         $body = $('body');
-        if (!$body.children("." + paneClass).length && !$body.children("." + sliderClass).length) {
+        if (!$body.children("." + paneClass).length && !$body.children("." + paneClass).children("." + sliderClass).length) {
           $body.append("<div class=\"" + paneClass + " external\"><div class=\"" + sliderClass + "\" /></div>");
         }
         this.pane = $body.children("." + paneClass);
@@ -533,8 +533,14 @@
 
     NanoScroll.prototype.reset = function() {
       var content, contentHeight, contentStyle, contentStyleOverflowY, paneBottom, paneHeight, paneOuterHeight, paneTop, sliderHeight;
-      if (!this.$el.find("." + this.options.paneClass).length) {
-        this.generate().stop();
+      if (this.options.externalScrollbar) {
+        if (!$('body').children("." + this.options.paneClass).length) {
+          this.generate().stop();
+        }
+      } else {
+        if (!this.$el.find("." + this.options.paneClass).length) {
+          this.generate().stop();
+        }
       }
       if (this.stopped) {
         this.restore();

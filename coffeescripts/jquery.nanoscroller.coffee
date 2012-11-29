@@ -456,7 +456,7 @@
       {paneClass, sliderClass, contentClass, externalScrollbar} = options
       if externalScrollbar
         $body = $ 'body'
-        if not $body.children(".#{paneClass}").length and not $body.children(".#{sliderClass}").length
+        if not $body.children(".#{paneClass}").length and not $body.children(".#{paneClass}").children(".#{sliderClass}").length
           $body.append """<div class="#{paneClass} external"><div class="#{sliderClass}" /></div>"""
 
         # pane is the name for the actual scrollbar.
@@ -506,7 +506,10 @@
           $(".nano").nanoScroller();
     ###
     reset: ->
-      @generate().stop() if not @$el.find(".#{@options.paneClass}").length
+      if @options.externalScrollbar
+        @generate().stop() if not $('body').children(".#{@options.paneClass}").length
+      else
+        @generate().stop() if not @$el.find(".#{@options.paneClass}").length
       do @restore if @stopped
       content = @content
       contentStyle = content.style
@@ -666,7 +669,7 @@
       if not scrollbar = @nanoscroller
         options = $.extend {}, defaults, settings
         @nanoscroller = scrollbar = new NanoScroll this, options
-      
+
       # scrollbar settings
       if settings and typeof settings is "object"
         $.extend scrollbar.options, settings # update scrollbar settings
